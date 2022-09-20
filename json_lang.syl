@@ -1,0 +1,49 @@
+node JsonNode { }
+
+node Null: JsonNode { }
+
+node Bool: JsonNode { }
+
+node Number: JsonNode { }
+
+node String: JsonNode { }
+
+node Array: JsonNode { 
+    elems: List<JsonNode> 
+}
+
+node Object: JsonNode {
+    members: List<Member>
+}
+
+node Member: JsonNode {
+    key: String,
+    value: JsonNode
+}
+
+term COMMA = ','
+term COLON = ':'
+term L_BRACE = '{'
+term R_BRACE = '}'
+term L_BRACKET = '['
+term R_BRACKET = ']'
+term NULL = 'null'
+
+term BOOL_LIT = `true|false`
+term NUMBER_LIT = `\-?(0|([1-9][0-9]*))(.[0-9]+)?((e|E)(\+|-)?[0-9]+)?`
+term STRING_LIT = `"([^"\\]|(\\[\\/bnfrt"])|(\\u[a-fA-F0-9]{4}))*"`
+
+
+ignore term WHITESPACE = `\s`
+
+rule string = String { STRING_LIT }
+
+rule member = Member { key@string COLON value@main }
+
+rule main =
+    Null { NULL }
+  | Number { NUMBER_LIT }
+  | Bool { BOOL_LIT }
+  | string
+  | Array { L_BRACKET elems@sepBy(COMMA, main) R_BRACKET }
+  | Object { L_BRACE members@sepBy(COMMA, member) R_BRACE }
